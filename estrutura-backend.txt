@@ -1,0 +1,83 @@
+Listagem de caminhos de pasta
+O número de série do volume é CE46-9F06
+C:.
+|   appsettings.Development.json
+|   appsettings.json
+|   estrutura-backend.txt
+|   ProjetoFinanceiro2025.csproj
+|   ProjetoFinanceiro2025.csproj.user
+|   ProjetoFinanceiro2025.http
+|   ProjetoFinanceiro2025.sln
+|   
++---Api
+|   |   Program.cs
+|   |   
+|   \---Controllers
+|           CategoriaController.cs
+|           PessoaController.cs
+|           TransacaoController.cs
+|           
++---Application
+|   +---DTOs
+|   |       CategoriaDTO.cs
+|   |       PessoaDTO.cs
+|   |       TransacaoDTO.cs
+|   |       
+|   +---Services
+|   |       CategoriaService.cs
+|   |       PessoaService.cs
+|   |       TransacaoService.cs
+|   |       
+|   \---Validators
+|           TransacaoValidator.cs
+|           
++---bin
+|   \---Debug
+|       \---net9.0
++---Domain
+|   +---Entities
+|   |       Categoria.cs
+|   |       Class.cs
+|   |       Pessoa.cs
+|   |       
+|   +---Enums
+|   |       FinalidadeCategoria.cs
+|   |       TipoTransacao.cs
+|   |       
+|   \---Interfaces
+|           IRepository.cs
+|           
++---Infrastructure
+|   +---context
+|   |       Class.cs
+|   |       
+|   +---migrations
+|   \---Repositories
+|           CategoriaRepository.cs
+|           PessoaRepository.cs
+|           TransacaoRepository.cs
+|           
++---obj
+|   |   project.assets.json
+|   |   project.nuget.cache
+|   |   ProjetoFinanceiro2025.csproj.nuget.dgspec.json
+|   |   ProjetoFinanceiro2025.csproj.nuget.g.props
+|   |   ProjetoFinanceiro2025.csproj.nuget.g.targets
+|   |   
+|   \---Debug
+|       \---net9.0
+|           |   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+|           |   ProjetoFinanceiro2025.AssemblyInfo.cs
+|           |   ProjetoFinanceiro2025.AssemblyInfoInputs.cache
+|           |   ProjetoFinanceiro2025.assets.cache
+|           |   ProjetoFinanceiro2025.csproj.AssemblyReference.cache
+|           |   ProjetoFinanceiro2025.GeneratedMSBuildEditorConfig.editorconfig
+|           |   ProjetoFinanceiro2025.GlobalUsings.g.cs
+|           |   staticwebassets.removed.txt
+|           |   
+|           +---ref
+|           +---refint
+|           \---staticwebassets
+\---Properties
+        launchSettings.json
+        
