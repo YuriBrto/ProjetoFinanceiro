@@ -1,41 +1,26 @@
 ﻿using ProjetoFinanceiro2025.Domain.Entities;
 using ProjetoFinanceiro2025.Domain.Interfaces;
 using ProjetoFinanceiro2025.Application.DTOs;
-
+using ProjetoFinanceiro2025.Application.Interfaces;
 
 namespace ProjetoFinanceiro2025.Application.Services
 {
-    public class TransacaoService
+    public class TransacaoService : ITransacaoService
     {
         private readonly IRepository<Transacao> _transacaoRepo;
-        private readonly IRepository<Pessoa> _pessoaRepo;
-        private readonly IRepository<Categoria> _categoriaRepo;
 
-        public TransacaoService(
-            IRepository<Transacao> transacaoRepo,
-            IRepository<Pessoa> pessoaRepo,
-            IRepository<Categoria> categoriaRepo)
+        public TransacaoService(IRepository<Transacao> transacaoRepo)
         {
             _transacaoRepo = transacaoRepo;
-            _pessoaRepo = pessoaRepo;
-            _categoriaRepo = categoriaRepo;
         }
 
         public async Task<TransacaoResponseDTO> CreateAsync(TransacaoCreateDTO dto)
         {
-            var pessoa = await _pessoaRepo.GetByIdAsync(dto.PessoaId)
-                         ?? throw new Exception("Pessoa não encontrada");
-
-            var categoria = await _categoriaRepo.GetByIdAsync(dto.CategoriaId)
-                           ?? throw new Exception("Categoria não encontrada");
-
             var transacao = new Transacao
             {
-                Descricao = dto.Descricao,
                 Valor = dto.Valor,
-                Tipo = dto.Tipo,
-                PessoaId = dto.PessoaId,
-                CategoriaId = dto.CategoriaId
+                CategoriaId = dto.CategoriaId,
+                PessoaId = dto.PessoaId
             };
 
             await _transacaoRepo.AddAsync(transacao);
@@ -44,13 +29,60 @@ namespace ProjetoFinanceiro2025.Application.Services
             return new TransacaoResponseDTO
             {
                 Id = transacao.Id,
-                Descricao = transacao.Descricao,
                 Valor = transacao.Valor,
-                Tipo = transacao.Tipo.ToString(),
-                PessoaId = pessoa.Id,
-                PessoaNome = pessoa.Nome,
-                CategoriaId = categoria.Id,
-                CategoriaDescricao = categoria.Descricao
+               
+                CategoriaId = transacao.CategoriaId,
+                PessoaId = transacao.PessoaId
+            };
+        }
+
+        public async Task<TransacaoResponseDTO?> GetByIdAsync(int id)
+        {
+            var transacao = await _transacaoRepo.GetByIdAsync(id);
+            if (transacao == null) return null;
+
+            return new TransacaoResponseDTO
+            {
+                Id = transacao.Id,
+                Valor = transacao.Valor,
+               
+                CategoriaId = transacao.CategoriaId,
+                PessoaId = transacao.PessoaId
+            };
+        }
+
+        public async Task<IEnumerable<TransacaoResponseDTO>> GetAllAsync()
+        {
+            var transacoes = await _transacaoRepo.GetAllAsync();
+            return transacoes.Select(t => new TransacaoResponseDTO
+            {
+                Id = t.Id,
+                Valor = t.Valor,
+             
+                CategoriaId = t.CategoriaId,
+                PessoaId = t.PessoaId
+            });
+        }
+
+
+        public async Task<TransacaoResponseDTO?> UpdateAsync(int id, TransacaoUpdateDTO dto)
+        {
+            var transacao = await _transacaoRepo.GetByIdAsync(id);
+            if (transacao == null) return null;
+
+            transacao.Valor = dto.Valor;
+            transacao.PessoaId = dto.PessoaId;
+            transacao.CategoriaId = dto.CategoriaId;
+
+            await _transacaoRepo.UpdateAsync(transacao);
+            await _transacaoRepo.SaveChangesAsync();
+
+            return new TransacaoResponseDTO
+            {
+                Id = transacao.Id,
+                Valor = transacao.Valor,
+                PessoaId = transacao.PessoaId,
+                CategoriaId = transacao.CategoriaId
             };
         }
 
@@ -59,7 +91,7 @@ namespace ProjetoFinanceiro2025.Application.Services
             var transacao = await _transacaoRepo.GetByIdAsync(id);
             if (transacao == null) return false;
 
-            _transacaoRepo.DeleteAsync(transacao);
+            await _transacaoRepo.DeleteAsync(transacao);
             await _transacaoRepo.SaveChangesAsync();
 
             return true;

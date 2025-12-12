@@ -1,11 +1,11 @@
 ﻿using ProjetoFinanceiro2025.Domain.Entities;
 using ProjetoFinanceiro2025.Domain.Interfaces;
 using ProjetoFinanceiro2025.Application.DTOs;
-
+using ProjetoFinanceiro2025.Application.Interfaces;
 
 namespace ProjetoFinanceiro2025.Application.Services
 {
-    public class PessoaService
+    public class PessoaService : IPessoaService
     {
         private readonly IRepository<Pessoa> _pessoaRepo;
 
@@ -58,26 +58,30 @@ namespace ProjetoFinanceiro2025.Application.Services
             });
         }
 
-        public async Task<bool> UpdateAsync(PessoaUpdateDTO dto)
+        public async Task<PessoaResponseDTO?> UpdateAsync(int id, PessoaUpdateDTO dto)
         {
-            var pessoa = await _pessoaRepo.GetByIdAsync(dto.Id);
-            if (pessoa == null) return false;
+            var pessoa = await _pessoaRepo.GetByIdAsync(id);
+            if (pessoa == null) return null;
 
             pessoa.Nome = dto.Nome;
             pessoa.Idade = dto.Idade;
 
-            _pessoaRepo.UpdateAsync(pessoa);
+            await _pessoaRepo.UpdateAsync(pessoa);
             await _pessoaRepo.SaveChangesAsync();
 
-            return true;
+            return new PessoaResponseDTO
+            {
+                Id = pessoa.Id,
+                Nome = pessoa.Nome,
+                Idade = pessoa.Idade
+            };
         }
-
         public async Task<bool> DeleteAsync(int id)
         {
             var pessoa = await _pessoaRepo.GetByIdAsync(id);
             if (pessoa == null) return false;
 
-            _pessoaRepo.DeleteAsync(pessoa);
+            await _pessoaRepo.DeleteAsync(pessoa);
             await _pessoaRepo.SaveChangesAsync();
 
             return true;
