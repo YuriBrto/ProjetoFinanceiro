@@ -4,10 +4,10 @@ namespace ProjetoFinanceiro2025.Application.Interfaces
 {
     public interface ITransacaoService
     {
-        Task<IEnumerable<TransacaoDTO>> GetAllAsync();
-        Task<TransacaoDTO> GetByIdAsync(int id);
-        Task<TransacaoDTO> CreateAsync(TransacaoCreateDTO dto);
-        Task<TransacaoDTO> UpdateAsync(int id, TransacaoUpdateDTO dto);
-        Task DeleteAsync(int id);
+        Task<IEnumerable<TransacaoResponseDTO>> GetAllAsync();
+        Task<TransacaoResponseDTO?> GetByIdAsync(int id);
+        Task<TransacaoResponseDTO> CreateAsync(TransacaoCreateDTO dto);
+        Task<bool> UpdateAsync(int id ,TransacaoUpdateDTO dto);
+        Task<bool> DeleteAsync(int id);
     }
 }

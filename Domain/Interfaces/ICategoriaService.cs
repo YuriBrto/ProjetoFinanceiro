@@ -4,10 +4,10 @@ namespace ProjetoFinanceiro2025.Application.Interfaces
 {
     public interface ICategoriaService
     {
-        Task<IEnumerable<CategoriaDTO>> GetAllAsync();
-        Task<CategoriaDTO> GetByIdAsync(int id);
-        Task<CategoriaDTO> CreateAsync(CategoriaCreateDTO dto);
-        Task<CategoriaDTO> UpdateAsync(int id, CategoriaUpdateDTO dto);
-        Task DeleteAsync(int id);
+        Task<IEnumerable<CategoriaResponseDTO>> GetAllAsync();
+        Task<CategoriaResponseDTO?> GetByIdAsync(int id);
+        Task<CategoriaResponseDTO> CreateAsync(CategoriaCreateDTO dto);
+        Task<bool> UpdateAsync(int id,CategoriaUpdateDTO dto);
+        Task<bool> DeleteAsync(int id);
     }
 }
