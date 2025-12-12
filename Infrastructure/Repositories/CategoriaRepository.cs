@@ -1,6 +1,13 @@
-﻿namespace ProjetoFinanceiro2025.Infrastructure.Repositories
+﻿using ProjetoFinanceiro2025.Domain.Entities;
+using ProjetoFinanceiro2025.Domain.Interfaces;
+using ProjetoFinanceiro2025.Infrastructure.context;
+
+namespace ProjetoFinanceiro2025.Infrastructure.Repositories
 {
-    public class CategoriaRepository
+    public class CategoriaRepository : Repository<Categoria>, IRepository<Categoria>
     {
+        public CategoriaRepository(AppDbContext context) : base(context)
+        {
+        }
     }
 }
