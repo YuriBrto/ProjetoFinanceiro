@@ -2,9 +2,8 @@
 
 namespace ProjetoFinanceiro2025.Application.DTOs
 {
-    public class TransacaoDTO
+    public class TransacaoCreateDTO
     {
-        public int Id { get; set; }
         public string Descricao { get; set; } = string.Empty;
         public decimal Valor { get; set; }
         public TipoTransacao Tipo { get; set; }

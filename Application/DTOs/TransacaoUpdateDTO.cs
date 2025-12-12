@@ -2,7 +2,7 @@
 
 namespace ProjetoFinanceiro2025.Application.DTOs
 {
-    public class TransacaoDTO
+    public class TransacaoUpdateDTO
     {
         public int Id { get; set; }
         public string Descricao { get; set; } = string.Empty;
