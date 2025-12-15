@@ -1,4 +1,12 @@
-export type TipoTransacao = 'RECEITA' | 'DESPESA';
+export const TipoTransacao = {
+  RECEITA: "RECEITA",
+  DESPESA: "DESPESA",
+} as const;
+
+export type TipoTransacao =
+  (typeof TipoTransacao)[keyof typeof TipoTransacao];
+
+
 export interface TransacaoDTO {
     Id: number;
   valor: number;

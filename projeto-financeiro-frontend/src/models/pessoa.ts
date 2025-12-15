@@ -16,7 +16,7 @@ export interface PessoaUpdateDTO{
 }
 
 export interface PessoaResponseDTO{
-    id: number;
+    Id: number;
     nome: string;
     idade: number;
 }

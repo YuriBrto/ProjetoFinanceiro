@@ -1,6 +1,13 @@
 // src/models/categoria.ts
 
-export type FinalidadeCategoria = 'RECEITA' | 'DESPESA';
+export const FinalidadeCategoria = {
+  RECEITA: "RECEITA",
+  DESPESA: "DESPESA",
+} as const;
+
+export type FinalidadeCategoria =
+  (typeof FinalidadeCategoria)[keyof typeof FinalidadeCategoria];
+
 
 export interface CategoriaDTO {
     Id: number;
