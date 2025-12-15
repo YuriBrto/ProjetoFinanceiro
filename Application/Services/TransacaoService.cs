@@ -2,99 +2,230 @@
 using ProjetoFinanceiro2025.Domain.Interfaces;
 using ProjetoFinanceiro2025.Application.DTOs;
 using ProjetoFinanceiro2025.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace ProjetoFinanceiro2025.Application.Services
 {
     public class TransacaoService : ITransacaoService
     {
         private readonly IRepository<Transacao> _transacaoRepo;
+        private readonly IRepository<Categoria> _categoriaRepo;
+        private readonly IRepository<Pessoa> _pessoaRepo;
+        private readonly ILogger<TransacaoService> _logger;
 
-        public TransacaoService(IRepository<Transacao> transacaoRepo)
+        public TransacaoService(
+            IRepository<Transacao> transacaoRepo,
+            IRepository<Categoria> categoriaRepo,
+            IRepository<Pessoa> pessoaRepo,
+            ILogger<TransacaoService> logger)
         {
             _transacaoRepo = transacaoRepo;
+            _categoriaRepo = categoriaRepo;
+            _pessoaRepo = pessoaRepo;
+            _logger = logger;
         }
 
         public async Task<TransacaoResponseDTO> CreateAsync(TransacaoCreateDTO dto)
         {
-            var transacao = new Transacao
+            try
             {
-                Valor = dto.Valor,
-                CategoriaId = dto.CategoriaId,
-                PessoaId = dto.PessoaId
-            };
+                // ✅ Validações de negócio
+                ValidarValor(dto.Valor);
+                await ValidarRelacionamentos(dto.CategoriaId, dto.PessoaId);
 
-            await _transacaoRepo.AddAsync(transacao);
-            await _transacaoRepo.SaveChangesAsync();
+                var transacao = new Transacao
+                {
+                    Valor = dto.Valor,
+                    CategoriaId = dto.CategoriaId,
+                    PessoaId = dto.PessoaId
+                };
 
-            return new TransacaoResponseDTO
+                await _transacaoRepo.AddAsync(transacao);
+                await _transacaoRepo.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "Transação criada com sucesso. ID: {TransacaoId}, Valor: {Valor}, CategoriaId: {CategoriaId}, PessoaId: {PessoaId}",
+                    transacao.Id, transacao.Valor, transacao.CategoriaId, transacao.PessoaId);
+
+                return new TransacaoResponseDTO
+                {
+                    Id = transacao.Id,
+                    Valor = transacao.Valor,
+                    CategoriaId = transacao.CategoriaId,
+                    PessoaId = transacao.PessoaId
+                };
+            }
+            catch (ArgumentException)
             {
-                Id = transacao.Id,
-                Valor = transacao.Valor,
-               
-                CategoriaId = transacao.CategoriaId,
-                PessoaId = transacao.PessoaId
-            };
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao criar transação");
+                throw new Exception("Erro ao criar transação", ex);
+            }
         }
 
         public async Task<TransacaoResponseDTO?> GetByIdAsync(int id)
         {
-            var transacao = await _transacaoRepo.GetByIdAsync(id);
-            if (transacao == null) return null;
-
-            return new TransacaoResponseDTO
+            try
             {
-                Id = transacao.Id,
-                Valor = transacao.Valor,
-               
-                CategoriaId = transacao.CategoriaId,
-                PessoaId = transacao.PessoaId
-            };
+                ValidarId(id);
+
+                var transacao = await _transacaoRepo.GetByIdAsync(id);
+                if (transacao == null)
+                {
+                    _logger.LogWarning("Transação não encontrada. ID: {TransacaoId}", id);
+                    return null;
+                }
+
+                return new TransacaoResponseDTO
+                {
+                    Id = transacao.Id,
+                    Valor = transacao.Valor,
+                    CategoriaId = transacao.CategoriaId,
+                    PessoaId = transacao.PessoaId
+                };
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar transação {TransacaoId}", id);
+                throw new Exception($"Erro ao buscar transação {id}", ex);
+            }
         }
 
         public async Task<IEnumerable<TransacaoResponseDTO>> GetAllAsync()
         {
-            var transacoes = await _transacaoRepo.GetAllAsync();
-            return transacoes.Select(t => new TransacaoResponseDTO
+            try
             {
-                Id = t.Id,
-                Valor = t.Valor,
-             
-                CategoriaId = t.CategoriaId,
-                PessoaId = t.PessoaId
-            });
-        }
+                var transacoes = await _transacaoRepo.GetAllAsync();
 
+                return transacoes.Select(t => new TransacaoResponseDTO
+                {
+                    Id = t.Id,
+                    Valor = t.Valor,
+                    CategoriaId = t.CategoriaId,
+                    PessoaId = t.PessoaId
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar todas as transações");
+                throw new Exception("Erro ao buscar transações", ex);
+            }
+        }
 
         public async Task<TransacaoResponseDTO?> UpdateAsync(int id, TransacaoUpdateDTO dto)
         {
-            var transacao = await _transacaoRepo.GetByIdAsync(id);
-            if (transacao == null) return null;
-
-            transacao.Valor = dto.Valor;
-            transacao.PessoaId = dto.PessoaId;
-            transacao.CategoriaId = dto.CategoriaId;
-
-            await _transacaoRepo.UpdateAsync(transacao);
-            await _transacaoRepo.SaveChangesAsync();
-
-            return new TransacaoResponseDTO
+            try
             {
-                Id = transacao.Id,
-                Valor = transacao.Valor,
-                PessoaId = transacao.PessoaId,
-                CategoriaId = transacao.CategoriaId
-            };
+                ValidarId(id);
+                ValidarValor(dto.Valor);
+                await ValidarRelacionamentos(dto.CategoriaId, dto.PessoaId);
+
+                var transacao = await _transacaoRepo.GetByIdAsync(id);
+                if (transacao == null)
+                {
+                    _logger.LogWarning("Transação não encontrada para atualização. ID: {TransacaoId}", id);
+                    return null;
+                }
+
+                transacao.Valor = dto.Valor;
+                transacao.CategoriaId = dto.CategoriaId;
+                transacao.PessoaId = dto.PessoaId;
+
+                await _transacaoRepo.UpdateAsync(transacao);
+                await _transacaoRepo.SaveChangesAsync();
+
+                _logger.LogInformation("Transação atualizada com sucesso. ID: {TransacaoId}", id);
+
+                return new TransacaoResponseDTO
+                {
+                    Id = transacao.Id,
+                    Valor = transacao.Valor,
+                    CategoriaId = transacao.CategoriaId,
+                    PessoaId = transacao.PessoaId
+                };
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar transação {TransacaoId}", id);
+                throw new Exception($"Erro ao atualizar transação {id}", ex);
+            }
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var transacao = await _transacaoRepo.GetByIdAsync(id);
-            if (transacao == null) return false;
+            try
+            {
+                ValidarId(id);
 
-            await _transacaoRepo.DeleteAsync(transacao);
-            await _transacaoRepo.SaveChangesAsync();
+                var transacao = await _transacaoRepo.GetByIdAsync(id);
+                if (transacao == null)
+                {
+                    _logger.LogWarning("Transação não encontrada para exclusão. ID: {TransacaoId}", id);
+                    return false;
+                }
 
-            return true;
+                await _transacaoRepo.DeleteAsync(transacao);
+                await _transacaoRepo.SaveChangesAsync();
+
+                _logger.LogInformation("Transação deletada com sucesso. ID: {TransacaoId}", id);
+
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao deletar transação {TransacaoId}", id);
+                throw new Exception($"Erro ao deletar transação {id}", ex);
+            }
+        }
+
+        // ✅ Métodos privados de validação
+        private void ValidarValor(decimal valor)
+        {
+            if (valor <= 0)
+                throw new ArgumentException("O valor da transação deve ser maior que zero");
+
+            if (valor > 999999999.99m)
+                throw new ArgumentException("O valor da transação excede o limite permitido");
+        }
+
+        private async Task ValidarRelacionamentos(int categoriaId, int pessoaId)
+        {
+            // Validar Categoria
+            var categoria = await _categoriaRepo.GetByIdAsync(categoriaId);
+            if (categoria == null)
+            {
+                _logger.LogWarning("Categoria não encontrada. ID: {CategoriaId}", categoriaId);
+                throw new ArgumentException($"Categoria com ID {categoriaId} não existe");
+            }
+
+            // Validar Pessoa
+            var pessoa = await _pessoaRepo.GetByIdAsync(pessoaId);
+            if (pessoa == null)
+            {
+                _logger.LogWarning("Pessoa não encontrada. ID: {PessoaId}", pessoaId);
+                throw new ArgumentException($"Pessoa com ID {pessoaId} não existe");
+            }
+        }
+
+        private void ValidarId(int id)
+        {
+            if (id <= 0)
+                throw new ArgumentException("ID inválido");
         }
     }
 }
