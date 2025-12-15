@@ -1,42 +1,91 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ProjetoFinanceiro2025.Infrastructure.DI;
 using ProjetoFinanceiro2025.Infrastructure.context;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Pegar a connection string do appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// ========================================
+// CONFIGURAÇÃO DE CORS
+// ========================================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",  // Create React App
+                "http://localhost:5173",  // Vite
+                "http://localhost:5174"   // Vite alternativa
+              )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
-// Configurar SQLite e DbContext usando DI
+// ========================================
+// CONFIGURAÇÃO DA CONNECTION STRING
+// ========================================
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Data Source=financeiro.db";
+
+// ========================================
+// INJEÇÃO DE DEPENDÊNCIAS
+// ========================================
 builder.Services.AddProjectServices(connectionString);
 
-// Adicionar controllers
+// ========================================
+// CONTROLLERS E SWAGGER
+// ========================================
 builder.Services.AddControllers();
-
-// Configurar Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new()
+    {
+        Title = "Projeto Financeiro API",
+        Version = "v1",
+        Description = "API para gerenciamento financeiro"
+    });
+});
 
 var app = builder.Build();
 
-// Configurar Swagger apenas em Development
+// ========================================
+// MIDDLEWARE PIPELINE
+// ========================================
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Projeto Financeiro API v1");
-        c.RoutePrefix = string.Empty; // Swagger na raiz http://localhost:5000
+        c.RoutePrefix = string.Empty;
     });
 }
 
-// Redirecionar HTTP para HTTPS
-app.UseHttpsRedirection();
+// ✅ ATIVAR CORS (IMPORTANTE!)
+app.UseCors("AllowReactApp");
 
-// Autoriza��o (voc� pode configurar autentica��o depois, se precisar)
 app.UseAuthorization();
-
-// Mapear endpoints dos controllers
 app.MapControllers();
+
+// ========================================
+// CRIAR BANCO AUTOMATICAMENTE
+// ========================================
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    try
+    {
+        dbContext.Database.Migrate();
+        Console.WriteLine("✅ Banco de dados criado/atualizado!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Erro ao criar banco: {ex.Message}");
+    }
+}
 
 app.Run();
