@@ -7,7 +7,7 @@ namespace ProjetoFinanceiro2025.Application.Interfaces
         Task<IEnumerable<CategoriaResponseDTO>> GetAllAsync();
         Task<CategoriaResponseDTO?> GetByIdAsync(int id);
         Task<CategoriaResponseDTO> CreateAsync(CategoriaCreateDTO dto);
-        Task<bool> UpdateAsync(int id,CategoriaUpdateDTO dto);
+        Task<CategoriaResponseDTO?> UpdateAsync(int id,CategoriaUpdateDTO dto);
         Task<bool> DeleteAsync(int id);
     }
 }

@@ -7,7 +7,7 @@ namespace ProjetoFinanceiro2025.Application.Interfaces
         Task<IEnumerable<TransacaoResponseDTO>> GetAllAsync();
         Task<TransacaoResponseDTO?> GetByIdAsync(int id);
         Task<TransacaoResponseDTO> CreateAsync(TransacaoCreateDTO dto);
-        Task<bool> UpdateAsync(int id ,TransacaoUpdateDTO dto);
+        Task<TransacaoResponseDTO?> UpdateAsync(int id ,TransacaoUpdateDTO dto);
         Task<bool> DeleteAsync(int id);
     }
 }
