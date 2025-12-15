@@ -9,20 +9,32 @@ using ProjetoFinanceiro2025.Infrastructure.context;
 
 namespace ProjetoFinanceiro2025.Infrastructure.DI
 {
+ 
     public static class DependencyInjection
     {
-        public static IServiceCollection AddProjectServices(this IServiceCollection services, string connectionString)
+     
+        public static IServiceCollection AddProjectServices(
+            this IServiceCollection services,
+            string connectionString)
         {
-            // DbContext
+            // ========================================
+            // DATABASE CONTEXT
+            // ========================================
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite(connectionString));
+                options.UseSqlite(connectionString)
+                    .EnableSensitiveDataLogging() // Remove em produção
+                    .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)); // Logs do EF Core
 
-            // Repositories
+            // ========================================
+            // REPOSITORIES (Data Access Layer)
+            // ========================================
             services.AddScoped<IRepository<Categoria>, CategoriaRepository>();
             services.AddScoped<IRepository<Pessoa>, PessoaRepository>();
             services.AddScoped<IRepository<Transacao>, TransacaoRepository>();
 
-            // Services
+            // ========================================
+            // APPLICATION SERVICES (Business Logic Layer)
+            // ========================================
             services.AddScoped<ICategoriaService, CategoriaService>();
             services.AddScoped<IPessoaService, PessoaService>();
             services.AddScoped<ITransacaoService, TransacaoService>();
