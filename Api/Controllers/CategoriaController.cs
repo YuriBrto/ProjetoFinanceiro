@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoFinanceiro2025.Application.Interfaces;
 using ProjetoFinanceiro2025.Application.DTOs;
-using ProjetoFinanceiro2025.Application.Services;
 
 namespace ProjetoFinanceiro2025.API.Controllers
 {
@@ -10,45 +9,139 @@ namespace ProjetoFinanceiro2025.API.Controllers
     public class CategoriaController : ControllerBase
     {
         private readonly ICategoriaService _service;
+        private readonly ILogger<CategoriaController> _logger;
 
-        public CategoriaController(ICategoriaService service)
+        public CategoriaController(ICategoriaService service, ILogger<CategoriaController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAll()
         {
-            var categorias = await _service.GetAllAsync();
-            return Ok(categorias);
+            try
+            {
+                var categorias = await _service.GetAllAsync();
+                return Ok(categorias);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar todas as categorias");
+                return StatusCode(500, new { message = "Erro interno ao buscar categorias" });
+            }
         }
 
+        
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(int id)
         {
-            var categoria = await _service.GetByIdAsync(id);
-            return Ok(categoria);
+            try
+            {
+                var categoria = await _service.GetByIdAsync(id);
+
+                if (categoria == null)
+                    return NotFound(new { message = $"Categoria com ID {id} não encontrada" });
+
+                return Ok(categoria);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar categoria {Id}", id);
+                return StatusCode(500, new { message = "Erro interno ao buscar categoria" });
+            }
         }
 
+       
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] CategoriaCreateDTO dto)
         {
-            var categoria = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = categoria.Id }, categoria);
+            try
+            {
+               
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var categoria = await _service.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = categoria.Id }, categoria);
+            }
+            catch (ArgumentException ex)
+            {
+               
+                _logger.LogWarning(ex, "Validação falhou ao criar categoria");
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao criar categoria");
+                return StatusCode(500, new { message = "Erro interno ao criar categoria" });
+            }
         }
 
+      
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Update(int id, [FromBody] CategoriaUpdateDTO dto)
         {
-            var categoria = await _service.UpdateAsync(id, dto);
-            return Ok(categoria);
+            try
+            {
+     
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var categoria = await _service.UpdateAsync(id, dto);
+
+                
+                if (categoria == null)
+                    return NotFound(new { message = $"Categoria com ID {id} não encontrada" });
+
+                return Ok(categoria);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Validação falhou ao atualizar categoria {Id}", id);
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar categoria {Id}", id);
+                return StatusCode(500, new { message = "Erro interno ao atualizar categoria" });
+            }
         }
 
+       
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+             
+                var sucesso = await _service.DeleteAsync(id);
+
+                if (!sucesso)
+                    return NotFound(new { message = $"Categoria com ID {id} não encontrada" });
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao deletar categoria {Id}", id);
+                return StatusCode(500, new { message = "Erro interno ao deletar categoria" });
+            }
         }
     }
 }
