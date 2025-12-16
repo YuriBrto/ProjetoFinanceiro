@@ -146,10 +146,16 @@ namespace ProjetoFinanceiro2025.API.Controllers
                 return StatusCode(500, new { message = "Erro interno ao atualizar transação" });
             }
         }
+        //Transacoes recentes para relatorio
+        [HttpGet("recentes")]
+        public async Task<IActionResult> GetRecentes()
+        {
+            var transacoes = await _service.GetRecentesAsync(5);
+            return Ok(transacoes);
+        }
 
-        
         /// Deleta uma transação
-     
+
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
