@@ -38,6 +38,8 @@ namespace ProjetoFinanceiro2025.Infrastructure.DI
             services.AddScoped<ICategoriaService, CategoriaService>();
             services.AddScoped<IPessoaService, PessoaService>();
             services.AddScoped<ITransacaoService, TransacaoService>();
+            services.AddScoped<IRelatorioService, RelatorioService>();
+
 
             return services;
         }

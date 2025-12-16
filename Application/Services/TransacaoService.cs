@@ -3,6 +3,9 @@ using ProjetoFinanceiro2025.Domain.Interfaces;
 using ProjetoFinanceiro2025.Application.DTOs;
 using ProjetoFinanceiro2025.Application.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using ProjetoFinanceiro2025.Infrastructure.context;
+using ProjetoFinanceiro2025.Domain.Enums;
 
 namespace ProjetoFinanceiro2025.Application.Services
 {
@@ -12,21 +15,33 @@ namespace ProjetoFinanceiro2025.Application.Services
         private readonly IRepository<Categoria> _categoriaRepo;
         private readonly IRepository<Pessoa> _pessoaRepo;
         private readonly ILogger<TransacaoService> _logger;
+        private readonly AppDbContext _context;
 
         public TransacaoService(
             IRepository<Transacao> transacaoRepo,
             IRepository<Categoria> categoriaRepo,
             IRepository<Pessoa> pessoaRepo,
-            ILogger<TransacaoService> logger)
+            ILogger<TransacaoService> logger,
+            AppDbContext context)
         {
             _transacaoRepo = transacaoRepo;
             _categoriaRepo = categoriaRepo;
             _pessoaRepo = pessoaRepo;
             _logger = logger;
+            _context = context;
         }
 
         public async Task<TransacaoResponseDTO> CreateAsync(TransacaoCreateDTO dto)
         {
+
+            var categoria = await _context.Categorias
+    .FirstOrDefaultAsync(c => c.Id == dto.CategoriaId);
+
+            if (categoria == null)
+            {
+                throw new ArgumentException("Categoria não encontrada");
+            }
+
             try
             {
                 // ✅ Validações de negócio
@@ -37,7 +52,11 @@ namespace ProjetoFinanceiro2025.Application.Services
                 {
                     Valor = dto.Valor,
                     CategoriaId = dto.CategoriaId,
-                    PessoaId = dto.PessoaId
+                    PessoaId = dto.PessoaId,
+
+                      Tipo = categoria.Finalidade == FinalidadeCategoria.Receita
+                ? TipoTransacao.Receita
+                : TipoTransacao.Despesa
                 };
 
                 await _transacaoRepo.AddAsync(transacao);
@@ -192,6 +211,29 @@ namespace ProjetoFinanceiro2025.Application.Services
                 throw new Exception($"Erro ao deletar transação {id}", ex);
             }
         }
+
+
+        //Relatorio
+
+        public async Task<IEnumerable<TransacaoRecenteDTO>> GetRecentesAsync(int quantidade)
+        {
+            return await _context.Transacoes
+                .Include(t => t.Pessoa)
+               .OrderByDescending(t => t.Id)
+
+                .Take(quantidade)
+                .Select(t => new TransacaoRecenteDTO
+                {
+                    Descricao = t.Descricao,
+                    Valor = t.Valor,
+                    Tipo = t.Tipo.ToString(),
+                    PessoaNome = t.Pessoa.Nome
+                })
+                .ToListAsync();
+        }
+
+
+
 
         // ✅ Métodos privados de validação
         private void ValidarValor(decimal valor)
