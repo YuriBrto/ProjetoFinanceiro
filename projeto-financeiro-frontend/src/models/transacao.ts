@@ -1,42 +1,47 @@
-export const TipoTransacao = {
-  RECEITA: "RECEITA",
-  DESPESA: "DESPESA",
+
+  export const TipoTransacao = {
+  Receita: 2,
+  Despesa: 1,
 } as const;
 
 export type TipoTransacao =
   (typeof TipoTransacao)[keyof typeof TipoTransacao];
 
 
-export interface TransacaoDTO {
+export interface TransacaoDTO
+{
     Id: number;
-  valor: number;
-  descricao: string;
-  tipo: TipoTransacao;
-  categoriaId: number;
-  pessoaId: number;
+  Descricao: string;
+  Valor: number;
+  Tipo: TipoTransacao;
+  PessoaId: number;
+  CategoriaId: number;
 }
-
-export interface TransacaoCreateDTO {
-  valor: number;
-  descricao: string;
-  tipo: TipoTransacao;
-  categoriaId: number;
-  pessoaId: number;
-}
-
-export interface TransacaoUpdateDTO {
-    Id: number;
-  valor: number;
-  descricao: string;
-  tipo: TipoTransacao;
-  categoriaId: number;
-  pessoaId: number;
-}
+  // DTO retornado pelo backend
 export interface TransacaoResponseDTO {
-  id: number;
-  valor: number;
-  descricao: string;
-  tipo: string;
-  categoriaId: number;
-  pessoaId: number;
-}   
+  Id: number;
+  Descricao: string;
+  Valor: number;
+  Tipo: TipoTransacao;
+  PessoaId: number;
+  CategoriaId: number;
+}
+
+// DTO para criar
+export interface TransacaoCreateDTO {
+  Descricao: string;
+  Valor: number;
+  Tipo: TipoTransacao;
+  PessoaId: number;
+  CategoriaId: number;
+}
+
+// DTO para atualizar
+export interface TransacaoUpdateDTO {
+  Id: number;
+  Descricao: string;
+  Valor: number;
+  Tipo: TipoTransacao;
+  PessoaId: number;
+  CategoriaId: number;
+}

@@ -1,26 +1,32 @@
-import axios from './axios';
-import type { TransacaoDTO, TransacaoCreateDTO, TransacaoUpdateDTO } from '../models/transacao';
+import axios from "axios";
+import type {
+  TransacaoResponseDTO,
+  TransacaoCreateDTO,
+  TransacaoUpdateDTO,
+} from "../models/transacao";
 
-export const getAllTransacoes = async (): Promise<TransacaoDTO[]> => {
-  const response = await axios.get("/Transacao"); // ✅ Singular
-  return response.data;
+const BASE_URL = "http://localhost:5127/api/Transacao";
+
+export const getAllTransacoes = async (): Promise<TransacaoResponseDTO[]> => {
+  const res = await axios.get(BASE_URL);
+  return res.data;
 };
 
-export const getTransacaoById = async (id: number): Promise<TransacaoDTO> => {
-  const response = await axios.get(`/Transacao/${id}`); // ✅ Singular
-  return response.data;
+export const getTransacaoById = async (id: number) => {
+  const res = await axios.get(`${BASE_URL}/${id}`);
+  return res.data;
 };
 
-export const createTransacao = async (dto: TransacaoCreateDTO): Promise<TransacaoDTO> => {
-  const response = await axios.post("/Transacao", dto); // ✅ Singular
-  return response.data;
+export const createTransacao = async (dto: TransacaoCreateDTO) => {
+  const res = await axios.post(BASE_URL, dto);
+  return res.data;
 };
 
-export const updateTransacao = async (id: number, dto: TransacaoUpdateDTO): Promise<TransacaoDTO> => {
-  const response = await axios.put(`/Transacao/${id}`, dto); // ✅ Singular
-  return response.data;
+export const updateTransacao = async (id: number, dto: TransacaoUpdateDTO) => {
+  const res = await axios.put(`${BASE_URL}/${id}`, dto);
+  return res.data;
 };
 
-export const deleteTransacao = async (id: number): Promise<void> => {
-  await axios.delete(`/Transacao/${id}`); // ✅ Singular
+export const deleteTransacao = async (id: number) => {
+  await axios.delete(`${BASE_URL}/${id}`);
 };

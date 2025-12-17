@@ -6,7 +6,7 @@ import {
   getPessoaById,
 } from "../../api/pessoa.api";
 import type { PessoaCreateDTO, PessoaUpdateDTO } from "../../models/pessoa";
-import Button from "../../components/Button";
+import Button from "../../components/UI/Button";
 import Input from "../../components/Input";
 import { ArrowLeft, Save, User } from "lucide-react";
 import axios from "axios";

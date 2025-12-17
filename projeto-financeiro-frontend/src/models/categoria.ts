@@ -1,16 +1,15 @@
-// src/models/categoria.ts
-
+// Enum igual ao backend
 export const FinalidadeCategoria = {
-  RECEITA: "RECEITA",
-  DESPESA: "DESPESA",
+  Receita: 0,
+  Despesa: 1,
 } as const;
 
 export type FinalidadeCategoria =
   (typeof FinalidadeCategoria)[keyof typeof FinalidadeCategoria];
 
-
+ 
 export interface CategoriaDTO {
-    Id: number;
+  Id: number;
   descricao: string;
   finalidade: FinalidadeCategoria;
 }
@@ -27,7 +26,7 @@ export interface CategoriaCreateDTO {
  * DTO usado para atualização
  */
 export interface CategoriaUpdateDTO {
-    Id: number;
+  Id: number;
   descricao: string;
   finalidade: FinalidadeCategoria;
 }
@@ -36,7 +35,7 @@ export interface CategoriaUpdateDTO {
  * DTO retornado pela API
  */
 export interface CategoriaResponseDTO {
-  id: number;
+  Id: number;
   descricao: string;
-  finalidade: string;
+  finalidade: FinalidadeCategoria;
 }

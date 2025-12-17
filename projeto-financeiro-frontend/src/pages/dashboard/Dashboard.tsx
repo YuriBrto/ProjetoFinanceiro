@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  relatorioService
-} from "../../api/relatorio.api";
+import { relatorioService } from "../../api/relatorio.api";
 import type { TransacaoRecenteDTO } from "../../api/relatorio.api";
 
 export default function Dashboard() {

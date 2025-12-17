@@ -1,14 +1,9 @@
-import axios from './axios';
+import axios from "./axios";
 
-/* ===== Tipos ===== */
-
-export interface TotalPessoaDTO {
-  nome: string;
-  totalReceita: number;
-  totalDespesa: number;
-  saldo: number;
-}
-
+/**
+ * DTO das transações recentes
+ * Deve bater com o backend (TransacaoRecenteDTO)
+ */
 export interface TransacaoRecenteDTO {
   descricao: string;
   valor: number;
@@ -16,27 +11,46 @@ export interface TransacaoRecenteDTO {
   pessoaNome: string;
 }
 
-/* ===== Service ===== */
+/**
+ * DTO do relatório por pessoa
+ * Deve bater com o backend
+ */
+export interface TotalPessoaDTO {
+  nome: string;
+  totalReceita: number;
+  totalDespesa: number;
+  saldo: number;
+}
 
+/**
+ * Retorna o saldo geral
+ */
+const obterSaldoGeral = async (): Promise<number> => {
+  const response = await axios.get("/Relatorio/saldo");
+  return response.data;
+};
+
+/**
+ * Retorna as transações recentes
+ */
+const obterTransacoesRecentes = async (): Promise<TransacaoRecenteDTO[]> => {
+  const response = await axios.get("/Transacao/recentes");
+  return response.data;
+};
+
+/**
+ * Retorna o total de receitas/despesas agrupado por pessoa
+ */
+const obterTotaisPorPessoa = async (): Promise<TotalPessoaDTO[]> => {
+  const response = await axios.get("/Relatorio/pessoa");
+  return response.data;
+};
+
+/**
+ * Service exportado
+ */
 export const relatorioService = {
-  obterSaldoGeral: async (): Promise<number> => {
-    const response = await axios.get<number>(
-      "/relatorios/saldo-geral"
-    );
-    return response.data;
-  },
-
-  obterTotaisPorPessoa: async (): Promise<TotalPessoaDTO[]> => {
-    const response = await axios.get<TotalPessoaDTO[]>(
-      "/relatorios/totais-por-pessoa"
-    );
-    return response.data;
-  },
-
-  obterTransacoesRecentes: async (): Promise<TransacaoRecenteDTO[]> => {
-    const response = await axios.get<TransacaoRecenteDTO[]>(
-      "/transacoes/recentes?limite=5"
-    );
-    return response.data;
-  },
+  obterSaldoGeral,
+  obterTransacoesRecentes,
+  obterTotaisPorPessoa,
 };
