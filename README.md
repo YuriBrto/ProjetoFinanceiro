@@ -38,7 +38,7 @@ O **Projeto Financeiro 2025** é uma solução completa para gestão financeira,
 | **.NET** | 9.0 | Framework moderno e de alto desempenho |
 | **ASP.NET Core** | 9.0 | Framework web RESTful |
 | **Entity Framework Core** | 9.0 | ORM para gerenciamento de dados |
-| **SQL Server** | Latest | Banco de dados relacional |
+| **SQLITE r** | Latest | Banco de dados relacional |
 | **Swagger/OpenAPI** | 3.0 | Documentação automática de API |
 | **Dependency Injection** | Nativa | Inversão de controle |
 
@@ -81,7 +81,7 @@ O **Projeto Financeiro 2025** é uma solução completa para gestão financeira,
 ### 📊 Banco de Dados
 
 ```
-✓ SQL Server
+✓ SQLite
 ✓ Entity Framework Core Migrations
 ✓ Relacionamentos normalizados
 ✓ Constraints e validações em BD
