@@ -1,12 +1,12 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5127/api", // ✅ Ajuste a porta conforme seu backend
+  baseURL: "http://localhost:5127/api", // Ajuste a porta conforme seu backend
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000, // ✅ Timeout de 10 segundos
-});
+  timeout: 10000, //  Timeout de 10 segundos
+})
 
 // ✅ Interceptor para tratamento de erros global
 axiosInstance.interceptors.response.use(

@@ -22,6 +22,7 @@ const CategoriaForm: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [descricao, setDescricao] = useState("");
+  // ✅ Estado agora é sempre número
   const [finalidade, setFinalidade] = useState<FinalidadeCategoria>(
     FinalidadeCategoria.Despesa
   );
@@ -32,6 +33,7 @@ const CategoriaForm: React.FC = () => {
       try {
         const categoria = await getCategoriaById(categoriaId);
         setDescricao(categoria.descricao);
+        // ✅ Sempre recebe número (já processado)
         setFinalidade(categoria.finalidade);
       } catch {
         alert("Erro ao carregar categoria");
@@ -61,16 +63,16 @@ const CategoriaForm: React.FC = () => {
     try {
       if (id) {
         const dto: CategoriaUpdateDTO = {
-          Id: Number(id),
+          id: Number(id),
           descricao: descricao.trim(),
-          finalidade,
+          finalidade, // ✅ Sempre número
         };
         await updateCategoria(Number(id), dto);
         alert("Categoria atualizada com sucesso");
       } else {
         const dto: CategoriaCreateDTO = {
           descricao: descricao.trim(),
-          finalidade,
+          finalidade, // ✅ Sempre número
         };
         await createCategoria(dto);
         alert("Categoria criada com sucesso");
@@ -107,31 +109,50 @@ const CategoriaForm: React.FC = () => {
           required
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => setFinalidade(FinalidadeCategoria.Receita)}
-            className={`p-4 rounded-xl border ${
-              finalidade === FinalidadeCategoria.Receita
-                ? "border-green-500 bg-green-50"
-                : "border-gray-200"
-            }`}
-          >
-            <TrendingUp className="mx-auto mb-2" />
-            Receita
-          </button>
-
+        <div className="grid grid-cols-3 gap-4">
+          {/* Despesa = 1 */}
           <button
             type="button"
             onClick={() => setFinalidade(FinalidadeCategoria.Despesa)}
-            className={`p-4 rounded-xl border ${
+            className={`p-4 rounded-xl border-2 transition ${
               finalidade === FinalidadeCategoria.Despesa
                 ? "border-red-500 bg-red-50"
-                : "border-gray-200"
+                : "border-gray-200 hover:border-gray-300"
             }`}
           >
-            <TrendingDown className="mx-auto mb-2" />
-            Despesa
+            <TrendingDown className="mx-auto mb-2 text-red-600" />
+            <p className="font-semibold text-gray-900">Despesa</p>
+          </button>
+
+          {/* Receita = 2 */}
+          <button
+            type="button"
+            onClick={() => setFinalidade(FinalidadeCategoria.Receita)}
+            className={`p-4 rounded-xl border-2 transition ${
+              finalidade === FinalidadeCategoria.Receita
+                ? "border-green-500 bg-green-50"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            <TrendingUp className="mx-auto mb-2 text-green-600" />
+            <p className="font-semibold text-gray-900">Receita</p>
+          </button>
+
+          {/* Ambas = 3 */}
+          <button
+            type="button"
+            onClick={() => setFinalidade(FinalidadeCategoria.Ambas)}
+            className={`p-4 rounded-xl border-2 transition ${
+              finalidade === FinalidadeCategoria.Ambas
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            <div className="mx-auto mb-2 flex justify-center gap-1">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+              <TrendingDown className="w-4 h-4 text-blue-600" />
+            </div>
+            <p className="font-semibold text-gray-900 text-sm">Ambas</p>
           </button>
         </div>
 

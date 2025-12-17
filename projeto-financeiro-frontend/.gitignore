@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 
+.financeiro.db
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

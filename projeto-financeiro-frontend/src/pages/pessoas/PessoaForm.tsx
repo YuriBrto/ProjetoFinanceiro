@@ -1,43 +1,44 @@
-import React, { useState, useEffect,useCallback } from "react";
+import React, { useEffect, useState} from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  createPessoa,
-  updatePessoa,
-  getPessoaById,
-} from "../../api/pessoa.api";
-import type { PessoaCreateDTO, PessoaUpdateDTO } from "../../models/pessoa";
+import axios from "axios";
+import { getPessoaById, updatePessoa, createPessoa } from "../../api/pessoa.api";
+import type { PessoaUpdateDTO, PessoaCreateDTO } from "../../models/pessoa";
 import Button from "../../components/UI/Button";
 import Input from "../../components/Input";
 import { ArrowLeft, Save, User } from "lucide-react";
-import axios from "axios";
-
 
 const PessoaForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!id); // Se tem ID, começa carregando
   const [nome, setNome] = useState("");
   const [idade, setIdade] = useState<number>(0);
   const [errors, setErrors] = useState<{ nome?: string; idade?: string }>({});
 
-  const loadPessoa = useCallback(async (pessoaId: number) => {
-  try {
-    const pessoa = await getPessoaById(pessoaId);
-    setNome(pessoa.nome);
-    setIdade(pessoa.idade);
-  } catch (error) {
-    console.error("Erro ao carregar pessoa", error);
-    alert("Erro ao carregar pessoa");
-    navigate("/pessoas");
-  }
-}, [navigate]);
-
+  //  Carregar dados da pessoa para edição
   useEffect(() => {
     if (id) {
-      loadPessoa(Number(id));
+      carregarPessoa(Number(id));
     }
-  }, [id, navigate]);
+  }, [id]);
 
+  const carregarPessoa = async (pessoaId: number) => {
+    try {
+      setLoading(true);
+      const pessoa = await getPessoaById(pessoaId);
+      
+      setNome(pessoa.nome);
+      setIdade(pessoa.idade);
+    } catch (error) {
+      console.error("❌ Erro ao carregar pessoa", error);
+      alert("Erro ao carregar pessoa. Redirecionando...");
+      navigate("/pessoas");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Validação
   const validate = (): boolean => {
     const newErrors: { nome?: string; idade?: string } = {};
 
@@ -47,8 +48,8 @@ const PessoaForm: React.FC = () => {
       newErrors.nome = "Nome deve ter no mínimo 3 caracteres";
     }
 
-    if (idade < 0) {
-      newErrors.idade = "Idade não pode ser negativa";
+    if (idade <= 0) {
+      newErrors.idade = "Idade deve ser maior que 0";
     } else if (idade > 150) {
       newErrors.idade = "Idade inválida";
     }
@@ -57,6 +58,7 @@ const PessoaForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  //  Salvar (criar ou atualizar)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -64,39 +66,56 @@ const PessoaForm: React.FC = () => {
 
     setLoading(true);
 
-   try {
-  if (id) {
-    const dto: PessoaUpdateDTO = {
-      Id: Number(id),
-      nome: nome.trim(),
-      idade,
-    };
-    await updatePessoa(Number(id), dto);
-    alert("Pessoa atualizada com sucesso!");
-  } else {
-    const dto: PessoaCreateDTO = {
-      nome: nome.trim(),
-      idade,
-    };
-    await createPessoa(dto);
-    alert("Pessoa cadastrada com sucesso!");
-  }
+    try {
+      if (id) {
+       
+        const dto: PessoaUpdateDTO = {
+          id: Number(id),
+          nome: nome.trim(),
+          idade,
+        };
+        await updatePessoa(Number(id), dto);
+      
+        alert("Pessoa atualizada com sucesso!");
+      } else {
+      
+        const dto: PessoaCreateDTO = {
+          nome: nome.trim(),
+          idade,
+        };
+        await createPessoa(dto);
+        
+        alert("Pessoa cadastrada com sucesso!");
+      }
 
-  navigate("/pessoas");
-} catch (error: unknown) {
-  console.error("Erro ao salvar pessoa", error);
+      navigate("/pessoas");
+    } catch (error: unknown) {
+      console.error("❌ Erro ao salvar pessoa", error);
 
-  if (axios.isAxiosError(error)) {
-    alert(error.response?.data?.message || "Erro ao salvar pessoa");
-  } else if (error instanceof Error) {
-    alert(error.message);
-  } else {
-    alert("Erro inesperado ao salvar pessoa");
-  }
-} finally {
-  setLoading(false);
-}
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message || "Erro ao salvar pessoa");
+      } else if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Erro inesperado ao salvar pessoa");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
+  //  Loading da página
+  if (loading && id) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">Carregando pessoa...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       {/* Header */}
@@ -152,10 +171,12 @@ const PessoaForm: React.FC = () => {
             label="Idade"
             type="number"
             value={idade}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIdade(Number(e.target.value))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setIdade(Number(e.target.value))
+            }
             error={errors.idade}
             placeholder="Digite a idade"
-            min={0}
+            min={1}
             max={150}
             required
           />
@@ -192,11 +213,15 @@ const PessoaForm: React.FC = () => {
               type="submit"
               variant="primary"
               size="lg"
-              isLoading={loading}
+              disabled={loading}
               className="flex-1"
             >
               <Save className="w-5 h-5 mr-2" />
-              {id ? "Atualizar Pessoa" : "Cadastrar Pessoa"}
+              {loading
+                ? "Salvando..."
+                : id
+                ? "Atualizar Pessoa"
+                : "Cadastrar Pessoa"}
             </Button>
             <Button
               type="button"

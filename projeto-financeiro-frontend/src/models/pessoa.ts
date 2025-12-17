@@ -1,5 +1,5 @@
 export interface PessoaDTO{
-    Id: number;
+    id: number;
     nome: string;
     idade: number;
 }
@@ -10,13 +10,13 @@ export interface PessoaCreateDTO{
 }
 
 export interface PessoaUpdateDTO{
-    Id: number;
+    id: number;
     nome: string;
     idade: number;
 }
 
 export interface PessoaResponseDTO{
-    Id: number;
+    id: number;
     nome: string;
     idade: number;
 }
