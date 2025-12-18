@@ -1,5 +1,6 @@
 import axiosInstance from "./axios";
-
+import { getAllTransacoes } from "./transacao.api";
+import { isReceita, isDespesa } from "../models/transacao";
 /**
  * DTO das transações recentes
  * Deve bater com o backend (TransacaoRecenteDTO)
@@ -90,40 +91,62 @@ class RelatorioService {
   /**
    * Obter todos os dados de relatório em uma única chamada
    */
-  async obterRelatorioCompleto(): Promise<{
-    saldoGeral: number;
-    totalReceitas: number;
-    totalDespesas: number;
-    pessoas: TotalPessoaDTO[];
-  }> {
-    try {
-      const [saldo, pessoas] = await Promise.all([
-        this.obterSaldoGeral(),
-        this.obterTotaisPorPessoa(),
-      ]);
+  
+async obterRelatorioCompleto(): Promise<{
+  saldoGeral: number;
+  totalReceitas: number;
+  totalDespesas: number;
+  pessoas: TotalPessoaDTO[];
+}> {
+  try {
+    const transacoes = await getAllTransacoes();
 
-      // ✅ Calcular totais a partir das pessoas
-      const totalReceitas = pessoas.reduce((sum, p) => sum + p.totalReceita, 0);
-      const totalDespesas = pessoas.reduce((sum, p) => sum + p.totalDespesa, 0);
+    let totalReceitas = 0;
+    let totalDespesas = 0;
 
-      return {
-        saldoGeral: saldo || totalReceitas - totalDespesas,
-        totalReceitas,
-        totalDespesas,
-        pessoas,
-      };
-    } catch (error) {
-      console.error("❌ Erro ao obter relatório completo:", error);
-      return {
-        saldoGeral: 0,
-        totalReceitas: 0,
-        totalDespesas: 0,
-        pessoas: [],
-      };
+    const mapaPessoas = new Map<string, TotalPessoaDTO>();
+
+    for (const t of transacoes) {
+      const nome = t.pessoaNome || "Sem Pessoa";
+
+      if (!mapaPessoas.has(nome)) {
+        mapaPessoas.set(nome, {
+          nome,
+          totalReceita: 0,
+          totalDespesa: 0,
+          saldo: 0,
+        });
+      }
+
+      const pessoa = mapaPessoas.get(nome)!;
+
+      if (isReceita(t.tipo)) {
+        totalReceitas += t.valor;
+        pessoa.totalReceita += t.valor;
+      } else if (isDespesa(t.tipo)) {
+        totalDespesas += t.valor;
+        pessoa.totalDespesa += t.valor;
+      }
+
+      pessoa.saldo = pessoa.totalReceita - pessoa.totalDespesa;
     }
-  }
-}
 
+    return {
+      totalReceitas,
+      totalDespesas,
+      saldoGeral: totalReceitas - totalDespesas,
+      pessoas: Array.from(mapaPessoas.values()),
+    };
+  } catch (error) {
+    console.error("Erro ao gerar relatório:", error);
+    return {
+      saldoGeral: 0,
+      totalReceitas: 0,
+      totalDespesas: 0,
+      pessoas: [],
+    };
+  }
+}}
 /**
  * Service exportado
  */
